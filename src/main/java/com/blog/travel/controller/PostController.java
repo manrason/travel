@@ -34,7 +34,7 @@ public class PostController {
         return post.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PostMapping("/add/{id}")
+    @PostMapping("/add")
     public ResponseEntity<Post> save(@Validated @RequestParam Post post) {
         try {
             return new ResponseEntity<>(postServiceImpl.save(post), HttpStatus.CREATED);

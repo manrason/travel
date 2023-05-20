@@ -3,14 +3,15 @@ package com.blog.travel.repository;
 import com.blog.travel.controller.PostController;
 import com.blog.travel.entity.Post;
 import com.blog.travel.service.PostServiceImpl;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -71,5 +72,17 @@ public class PostControllerTest {
 
         mockMvc.perform(get("/api/get/{id}", usedId))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void should_return_created_when_add_post() throws Exception {
+        Post post = new Post(3L, "titleToAdd", "descriptionToAdd", "auteur3", LocalDate.now());
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/post/add/{id}", post.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                
+                                """))
+                .andExpect(status().isCreated());
     }
 }

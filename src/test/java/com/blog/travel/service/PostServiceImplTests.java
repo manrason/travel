@@ -83,9 +83,7 @@ public class PostServiceImplTests {
     public void given_post_to_save_should_throw_exist_exception() {
         given(postRepository.findById(post2.getId())).willReturn(Optional.of(post2));
 
-        assertThrows(PostAlreadyExistException.class, () -> {
-            postServiceImpl.save(post2);
-        });
+        assertThrows(PostAlreadyExistException.class, () -> postServiceImpl.save(post2));
 
         verify(postRepository, never()).save(any(Post.class));
     }

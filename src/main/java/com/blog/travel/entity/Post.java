@@ -34,6 +34,13 @@ public class Post {
         this.date = date;
     }
 
+    public Post(String title, String description, String author, LocalDate date) {
+        this.title = title;
+        this.description = description;
+        this.author = author;
+        this.date = date;
+    }
+
     public Long getId() {
         return id;
     }

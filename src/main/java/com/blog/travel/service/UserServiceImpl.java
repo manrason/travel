@@ -16,7 +16,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User add(User user) {
+    public User add(User user) throws UserAlreadyExistException {
         Optional<User> userOptional = userRepository.findById(user.getUserId());
         if (userOptional.isPresent()){
             throw new UserAlreadyExistException("User already exist");

@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-public class PostServiceImplTests {
+class PostServiceImplTests {
     @Mock
     private PostRepository postRepository;
 
@@ -40,7 +40,7 @@ public class PostServiceImplTests {
 
 
     @Test
-    public void should_return_all_student(){
+    void should_return_all_student(){
         //WHEN
         when(postRepository.findAll()).thenReturn(List.of(post1, post2));
 
@@ -49,7 +49,7 @@ public class PostServiceImplTests {
         assertThat(postServiceImpl.getAllPost()).hasSize(2);
     }
     @Test
-    public void given_post_id_should_return_post_object(){
+    void given_post_id_should_return_post_object(){
         //GIVEN
         given(postRepository.findById(1L)).willReturn(Optional.of(post1));
         //WHEN
@@ -61,7 +61,7 @@ public class PostServiceImplTests {
     }
 
     @Test
-    public void given_post_to_save_should_save_post() throws Exception {
+    void given_post_to_save_should_save_post() throws Exception {
         // given - precondition or setup
         given(postRepository.findById(post2.getId()))
                 .willReturn(Optional.empty());
@@ -80,7 +80,7 @@ public class PostServiceImplTests {
     }
 
     @Test
-    public void given_post_to_save_should_throw_exist_exception() {
+    void given_post_to_save_should_throw_exist_exception() {
         given(postRepository.findById(post2.getId())).willReturn(Optional.of(post2));
 
         assertThrows(PostAlreadyExistException.class, () -> postServiceImpl.save(post2));
@@ -89,7 +89,7 @@ public class PostServiceImplTests {
     }
 
     @Test
-    public void given_post_to_update_should_return_updated_post(){
+    void given_post_to_update_should_return_updated_post(){
         given(postRepository.save(post1)).willReturn(post1);
         post1.setAuthor("updateAuthor");
         post1.setTitle("updateTitle");
@@ -101,7 +101,7 @@ public class PostServiceImplTests {
     }
 
     @Test
-    public void given_post_id_to_delete_then_nothing(){
+    void given_post_id_to_delete_then_nothing(){
         long postId = 1L;
 
         willDoNothing().given(postRepository).deleteById(postId);

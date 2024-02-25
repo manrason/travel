@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
-class PostServiceImplTests {
+class PostServiceImplTest {
     @Mock
     private PostRepository postRepository;
 

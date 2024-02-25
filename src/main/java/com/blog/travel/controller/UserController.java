@@ -6,8 +6,7 @@ import com.blog.travel.exception.UserAlreadyExistException;
 import com.blog.travel.mapper.UserMapper;
 import com.blog.travel.service.UserService;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,12 +17,16 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-@RequiredArgsConstructor
-@AllArgsConstructor
 public class UserController {
     public static final String NO_USER_FOUND = "No user found.";
     private final UserService userService;
-    private UserMapper mapper;
+    private final UserMapper mapper;
+
+    @Autowired
+    public UserController(UserService userService, UserMapper userMapper){
+        this.userService = userService;
+        this.mapper = userMapper;
+    }
 
     @PostMapping
     public ResponseEntity<Object> registerUser(@Valid @RequestBody UserDto userDto) {

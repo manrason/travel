@@ -7,23 +7,6 @@ import org.mapstruct.Mapper;
 @Mapper
 public interface UserMapper {
 
-    default User userDtoToUser(UserDto source) {
-        if ( source == null ) {
-            return null;
-        }
-        User target = new User();
-        target.setPassword(source.getConfirmPassword());
-        return target;
-    }
-    default User updateUserFromUserDto(User source, UserDto userDto){
-        if ( userDto == null ) {
-            return null;
-        }
-        if (userDto.getConfirmPassword() != null) {
-            source.setPassword(userDto.getConfirmPassword());
-            source.setEmail(userDto.getEmail());
-        }
-        return source;
-    }
-
+    User userDtoToUser(UserDto source);
+    User updateUserFromUserDto(User source, UserDto userDto);
 }

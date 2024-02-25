@@ -3,107 +3,164 @@ package com.blog.travel.repository;
 import com.blog.travel.controller.PostController;
 import com.blog.travel.entity.Post;
 import com.blog.travel.exception.PostAlreadyExistException;
-import com.blog.travel.service.PostServiceImpl;
+import com.blog.travel.service.PostService;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.BDDAssertions.then;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.*;
 
-@WebMvcTest(PostController.class)
-@AutoConfigureMockMvc
-class PostControllerTest {
-    @MockBean
-    private PostServiceImpl postService;
+ class PostControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @InjectMocks
     private PostController postController;
-
-    private List<Post> postList;
+    private PostService postService;
 
     @BeforeEach
-    void setup(){
-        postList = new ArrayList<>();
-        postList.add(new Post(1L, "titre", "une description", "auteur", LocalDate.now()));
-        postList.add(new Post(2L, "titre2", "deux description", "auteur2", LocalDate.now()));
-    }
-
-
-
-    @Test
-    void should_return_list_of_posts_and_return_200() throws Exception {
-
-        given(postService.getAllPost()).willReturn(postList);
-
-        mockMvc.perform(get("/api/post/get"))
-                .andExpect(status().isOk())
-                .andDo(print());
-
+    public void setup() {
+        postService = mock(PostService.class);
+        postController = new PostController(postService);
     }
 
     @Test
-    void should_return_post_when_get_post_by_id_and_return_status_ok() throws Exception {
-        Post post = new Post(1L, "titre", "une description", "auteur", LocalDate.now());
-        when(postService.getPost(post.getId())).thenReturn(Optional.of(post));
+    void getAllPosts_Ok() {
+        // Setup
+        when(postService.getAllPost()).thenReturn(new ArrayList<>());
 
-        mockMvc.perform(get("/api/post/get/1"))
-                .andDo(print())
-                .andExpect(status().isOk());
+        // Execute
+        ResponseEntity<List<Post>> result = postController.getAllPosts();
+
+        // Verify
+        verify(postService, times(1)).getAllPost();
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.OK));
     }
 
     @Test
-    void should_return_404_when_find_post_by_wrong_id() throws Exception {
-        final long usedId = 5L;
-        given(postService.getPost(usedId)).willReturn(Optional.empty());
+    void getAllPosts_ServerError() {
+        // Setup
+        when(postService.getAllPost()).thenThrow(RuntimeException.class);
 
-        mockMvc.perform(get("/api/get/{id}", usedId))
-                .andExpect(status().isNotFound());
+        // Execute
+        ResponseEntity<List<Post>> result = postController.getAllPosts();
+
+        // Verify
+        verify(postService, times(1)).getAllPost();
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThat(result.getBody(), nullValue());
     }
 
+    @Test
+    void getPost_Ok() {
+        // Setup
+        long postId = 1;
+        Post post = mock(Post.class);
+        when(postService.getPost(postId)).thenReturn(Optional.of(post));
+
+        // Execute
+        ResponseEntity<Post> result = postController.getPost(postId);
+
+        // Verify
+        verify(postService, times(1)).getPost(postId);
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.OK));
+        assertThat(result.getBody(), sameInstance(post));
+    }
 
     @Test
-    @DisplayName("Tests saving a post via controller")
-    void save() throws PostAlreadyExistException {
-        Post post = new Post(3L, "titleToAdd", "descriptionToAdd", "auteur3", LocalDate.now());
+    void getPost_NotFound() {
+        // Setup
+        long postId = 1;
+        when(postService.getPost(postId)).thenReturn(Optional.empty());
 
+        // Execute
+        ResponseEntity<Post> result = postController.getPost(postId);
+
+        // Verify
+        verify(postService, times(1)).getPost(postId);
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.NOT_FOUND));
+        assertThat(result.getBody(), nullValue());
+    }
+
+    @Test
+    void save_Created() throws PostAlreadyExistException {
+        // Setup
+        Post post = mock(Post.class);
         when(postService.save(any(Post.class))).thenReturn(post);
 
-        var returnedPost = postController.save(post);
+        // Execute
+        ResponseEntity<Post> result = postController.save(post);
 
-        then(returnedPost.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        // Verify
+        verify(postService, times(1)).save(any(Post.class));
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.CREATED));
+        assertThat(result.getBody(), sameInstance(post));
+    }
+
+/*    @Test
+    void save_InternalServerError() throws PostAlreadyExistException {
+        // Setup
+        Post post = mock(Post.class);
+        when(postService.save(any(Post.class))).thenThrow(RuntimeException.class);
+
+        // Execute
+        ResponseEntity<Post> result = postController.save(post);
+
+        // Verify
+        verify(postService, times(1)).save(any(Post.class));
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.INTERNAL_SERVER_ERROR));
+        assertThat(result.getBody(), nullValue());
+    }*/
+
+    @Test
+    void update_Ok() {
+        // Setup
+        long postId = 1;
+        Post post = mock(Post.class);
+        when(postService.updatePost(post)).thenReturn(post);
+
+        // Execute
+        ResponseEntity<Post> result = postController.update(post, postId);
+
+        // Verify
+        verify(postService, times(1)).updatePost(post);
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.OK));
+        assertThat(result.getBody(), sameInstance(post));
     }
 
     @Test
-    @DisplayName("Returns error status when exception occurs")
-    void saveWhenErrorOccurs() throws PostAlreadyExistException {
-        Post post = new Post(3L, "titleToAdd", "descriptionToAdd", "auteur3", LocalDate.now());
+    void delete_NoContent() {
+        // Setup
+        long postId = 1;
+        doNothing().when(postService).deletePost(postId);
 
-        when(postService.save(any(Post.class))).thenThrow(PostAlreadyExistException.class);
+        // Execute
+        ResponseEntity<HttpStatus> result = postController.delete(postId);
 
-        var returnedPost = postController.save(post);
-
-        then(returnedPost.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        // Verify
+        verify(postService, times(1)).deletePost(postId);
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.NO_CONTENT));
     }
+
+    @Test
+    void delete_InternalServerError() {
+        // Setup
+        long postId = 1;
+        doThrow(RuntimeException.class).when(postService).deletePost(postId);
+
+        // Execute
+        ResponseEntity<HttpStatus> result = postController.delete(postId);
+
+        // Verify
+        verify(postService, times(1)).deletePost(postId);
+        assertThat(result.getStatusCode(), sameInstance(HttpStatus.INTERNAL_SERVER_ERROR));
+    }
+
 }

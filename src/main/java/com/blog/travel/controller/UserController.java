@@ -1,29 +1,32 @@
 package com.blog.travel.controller;
 
+import com.blog.travel.dto.UserDto;
 import com.blog.travel.entity.User;
+import com.blog.travel.exception.UserAlreadyExistException;
 import com.blog.travel.mapper.UserMapper;
 import com.blog.travel.service.UserService;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import com.blog.travel.dto.UserDto;
+
 import java.util.Optional;
-import com.blog.travel.exception.UserAlreadyExistException;
 
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@AllArgsConstructor
 public class UserController {
     public static final String NO_USER_FOUND = "No user found.";
     private final UserService userService;
     private UserMapper mapper;
 
     @PostMapping
-    public ResponseEntity<Object> registerUser(@Valid @RequestBody UserDto userDto, BindingResult result) {
+    public ResponseEntity<Object> registerUser(@Valid @RequestBody UserDto userDto) {
         try {
             User savedUser = userService.add(mapper.userDtoToUser(userDto));
             return new ResponseEntity<>(savedUser, HttpStatus.CREATED);

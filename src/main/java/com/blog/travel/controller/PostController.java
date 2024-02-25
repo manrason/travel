@@ -3,7 +3,7 @@ package com.blog.travel.controller;
 import com.blog.travel.entity.Post;
 import com.blog.travel.exception.PostAlreadyExistException;
 import com.blog.travel.service.PostServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -11,12 +11,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/post")
 public class PostController {
-    @Autowired
-    private PostServiceImpl postServiceImpl;
+    private final PostServiceImpl postServiceImpl;
 
     @GetMapping("/get")
     public ResponseEntity<List<Post>> getAllPosts() {
@@ -44,7 +43,7 @@ public class PostController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Post> update(@Validated @RequestParam Post post) {
+    public ResponseEntity<Post> update(@Validated @RequestParam Post post, @PathVariable Long id) {
         return new ResponseEntity<>(postServiceImpl.updatePost(post), HttpStatus.OK);
     }
 

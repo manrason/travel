@@ -2,22 +2,27 @@ package com.blog.travel.repository;
 
 import com.blog.travel.controller.PostController;
 import com.blog.travel.entity.Post;
+import com.blog.travel.exception.PostAlreadyExistException;
 import com.blog.travel.service.PostServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.BDDAssertions.then;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,12 +31,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(PostController.class)
 @AutoConfigureMockMvc
-public class PostControllerTest {
+class PostControllerTest {
     @MockBean
     private PostServiceImpl postService;
 
     @Autowired
     private MockMvc mockMvc;
+
+    @InjectMocks
+    private PostController postController;
 
     private List<Post> postList;
 
@@ -74,15 +82,28 @@ public class PostControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+
     @Test
-    void should_return_created_when_add_post() throws Exception {
+    @DisplayName("Tests saving a post via controller")
+    void save() throws PostAlreadyExistException {
         Post post = new Post(3L, "titleToAdd", "descriptionToAdd", "auteur3", LocalDate.now());
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/post/add/{id}", post.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                
-                                """))
-                .andExpect(status().isCreated());
+        when(postService.save(any(Post.class))).thenReturn(post);
+
+        var returnedPost = postController.save(post);
+
+        then(returnedPost.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+    }
+
+    @Test
+    @DisplayName("Returns error status when exception occurs")
+    void saveWhenErrorOccurs() throws PostAlreadyExistException {
+        Post post = new Post(3L, "titleToAdd", "descriptionToAdd", "auteur3", LocalDate.now());
+
+        when(postService.save(any(Post.class))).thenThrow(PostAlreadyExistException.class);
+
+        var returnedPost = postController.save(post);
+
+        then(returnedPost.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

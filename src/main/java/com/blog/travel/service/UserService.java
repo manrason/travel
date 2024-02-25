@@ -13,4 +13,6 @@ public interface UserService {
     Optional<User> get(long id);
 
     void delete(long id);
+
+    boolean emailTaken(String email);
 }

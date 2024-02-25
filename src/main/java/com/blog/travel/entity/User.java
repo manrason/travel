@@ -37,5 +37,9 @@ public class User {
                 ", email='" + email + '\'' +
                 '}';
     }
+
+    public void setConfirmPassword(String confirmPassword) {
+        password = confirmPassword;
+    }
 }
 

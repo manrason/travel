@@ -41,7 +41,7 @@ class UserServiceImplTest {
         //GIVEN
         given(userRepository.findById(1L)).willReturn(Optional.of(user1));
         //WHEN
-        User user = userService.get(user1.getUserId()).get();
+        User user = userService.get(user1.getUserId()).orElse(null);
 
         //THEN
         assertThat(user).isNotNull();

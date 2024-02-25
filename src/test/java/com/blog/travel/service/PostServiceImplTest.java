@@ -53,7 +53,7 @@ class PostServiceImplTest {
         //GIVEN
         given(postRepository.findById(1L)).willReturn(Optional.of(post1));
         //WHEN
-        Post post = postServiceImpl.getPost(post1.getId()).get();
+        Post post = postServiceImpl.getPost(post1.getId()).orElse(null);
 
         //THEN
         assertThat(post).isNotNull();
